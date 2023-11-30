@@ -26,4 +26,11 @@ type EtcdConfig struct {
 	// How often to check the conditions for defragging (0 means no
 	// defrags, except for a single on startup).
 	DefragCheckFreq time.Duration `json:"-"`
+	
+	PeerURLs string `json:"peerURLS"`
+
+	ClientURLs string `json:"clientURLs"`
+
+	MasterNodeNames string `json:"masterNodeNames"`
+
 }

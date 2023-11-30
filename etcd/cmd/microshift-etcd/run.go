@@ -81,16 +81,21 @@ func (s *EtcdService) configure(cfg *config.Config) {
 	s.etcdCfg.Logger = "zap"
 	s.etcdCfg.Dir = dataDir
 	s.etcdCfg.QuotaBackendBytes = cfg.Etcd.QuotaBackendBytes
-	url2380 := setURL([]string{"localhost"}, "2380")
-	url2379 := setURL([]string{"localhost"}, "2379")
+
+	url2380 := cfg.Etcd.PeerURLs
+	url2379 := cfg.Etcd.ClientURLs
+	//url2380 := setURL([]string{"localhost"}, "2380")
+	//url2379 := setURL([]string{"localhost"}, "2379")
 	s.etcdCfg.AdvertisePeerUrls = url2380
 	s.etcdCfg.ListenPeerUrls = url2380
 	s.etcdCfg.AdvertiseClientUrls = url2379
 	s.etcdCfg.ListenClientUrls = url2379
 	s.etcdCfg.ListenMetricsUrls = setURL([]string{"localhost"}, "2381")
+	//s.etcd.Cfg.ListenMetricsUrls = 
 
 	s.etcdCfg.Name = cfg.Node.HostnameOverride
-	s.etcdCfg.InitialCluster = fmt.Sprintf("%s=https://%s:2380", cfg.Node.HostnameOverride, "localhost")
+	//s.etcdCfg.InitialCluster = fmt.Sprintf("%s=https://%s:2380", cfg.Node.HostnameOverride, "localhost")   // hostname=http://ip1:2380 
+	s.etcdCfg.InitialCluster = setHostNameURL(cfg.Node.hostnames,cfg.Node.ipaddress)
 
 	s.etcdCfg.CipherSuites = tlsCipherSuites
 	s.etcdCfg.ClientTLSInfo.CertFile = cryptomaterial.PeerCertPath(etcdServingCertDir)
@@ -183,6 +188,17 @@ func setURL(hostnames []string, port string) []url.URL {
 		urls[i] = *u
 	}
 	return urls
+}
+
+func setHostNameURL(hostname []string, ipaddress []string, port string) []string {
+	initcluster := []string{}
+	for i, name:= range ipaddress {
+		url := setURL(name, "2380")
+		str := []string{hostname[i], url}
+		hostnameurl = Join(str,"=")
+		initcluster = append(hostnameurl)
+	}
+	return initcluster.tostring()
 }
 
 // The following 'fragemented' logic is copied from the Openshift Cluster Etcd Operator.
